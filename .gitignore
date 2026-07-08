@@ -26,6 +26,14 @@ wheels/
 .installed.cfg
 *.egg
 
+# PyInstaller
+*.spec
+build/
+dist/
+*.exe
+*.app
+*.dmg
+
 # IDEs
 .vscode/
 .idea/
@@ -40,3 +48,8 @@ Thumbs.db
 _site/
 .jekyll-cache/
 .jekyll-metadata
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
