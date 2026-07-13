@@ -36,21 +36,22 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Database configuration from environment variables
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_USER = os.getenv("DB_USER", "root")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "root")
-DB_NAME = os.getenv("DB_NAME", "inventory_db")
+
+def get_db_config():
+    return {
+        "host": os.getenv("DB_HOST") or os.getenv("MYSQLHOST") or "localhost",
+        "user": os.getenv("DB_USER") or os.getenv("MYSQLUSER") or "root",
+        "password": os.getenv("DB_PASSWORD") or os.getenv("MYSQLPASSWORD") or "root",
+        "database": os.getenv("DB_NAME") or os.getenv("MYSQLDATABASE") or os.getenv("DB_DATABASE") or "inventory_db",
+        "port": int(os.getenv("DB_PORT") or os.getenv("MYSQLPORT") or "3306")
+    }
+
 
 # Database connection
 @st.cache_resource
 def get_connection():
     try:
-        conn = mysql.connector.connect(
-            host=DB_HOST,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            database=DB_NAME
-        )
+        conn = mysql.connector.connect(**get_db_config())
         return conn
     except Error as e:
         st.error(f"❌ Database Connection Failed: {e}")
