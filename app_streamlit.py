@@ -3,6 +3,11 @@ import mysql.connector
 from mysql.connector import Error
 import pandas as pd
 from datetime import datetime
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Page configuration
 st.set_page_config(
@@ -30,15 +35,21 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Database configuration from environment variables
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_USER = os.getenv("DB_USER", "root")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "root")
+DB_NAME = os.getenv("DB_NAME", "inventory_db")
+
 # Database connection
 @st.cache_resource
 def get_connection():
     try:
         conn = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="root",
-            database="inventory_db"
+            host=DB_HOST,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            database=DB_NAME
         )
         return conn
     except Error as e:

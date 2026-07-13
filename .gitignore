@@ -53,3 +53,11 @@ _site/
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Streamlit secrets
+.streamlit/secrets.toml
