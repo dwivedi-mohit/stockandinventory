@@ -1,21 +1,18 @@
 import streamlit as st
+import sqlite3
 import pandas as pd
 from datetime import datetime
+import os
 
-# Page configuration
 st.set_page_config(
-    page_title="📦 Inventory Management System",
-    page_icon="📦",
+    page_title="Inventory Management System",
+    page_icon=":package:",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS
 st.markdown("""
 <style>
-    .main {
-        padding: 2rem;
-    }
     .stButton>button {
         width: 100%;
         background-color: #2E86DE;
@@ -28,182 +25,255 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Title
-st.title("📦 Inventory Management System")
+
+def get_db():
+    conn = sqlite3.connect(":memory:", check_same_thread=False)
+    c = conn.cursor()
+    c.execute("""CREATE TABLE IF NOT EXISTS Products (
+        product_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        product_name TEXT NOT NULL,
+        price REAL NOT NULL,
+        stock_quantity INTEGER NOT NULL
+    )""")
+    c.execute("""CREATE TABLE IF NOT EXISTS Suppliers (
+        supplier_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        supplier_name TEXT NOT NULL,
+        contact_info TEXT,
+        email TEXT
+    )""")
+    c.execute("""CREATE TABLE IF NOT EXISTS Transactions (
+        transaction_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        product_id INTEGER,
+        transaction_type TEXT,
+        quantity INTEGER,
+        transaction_date TEXT,
+        FOREIGN KEY (product_id) REFERENCES Products(product_id)
+    )""")
+    if c.execute("SELECT COUNT(*) FROM Products").fetchone()[0] == 0:
+        sample_products = [
+            ("Laptop", 899.99, 15), ("Mouse", 25.50, 5),
+            ("Keyboard", 75.00, 8), ("Monitor", 299.99, 3),
+            ("USB Cable", 9.99, 50), ("Headphones", 149.99, 12),
+            ("Webcam", 79.99, 7), ("Printer", 199.99, 2),
+        ]
+        c.executemany("INSERT INTO Products (product_name, price, stock_quantity) VALUES (?, ?, ?)", sample_products)
+        sample_suppliers = [
+            ("Tech Supplies Co.", "555-1001", "info@techsupply.com"),
+            ("Electronics Plus", "555-2002", "sales@eplus.com"),
+            ("Global Hardware", "555-3003", "contact@globalhw.com"),
+        ]
+        c.executemany("INSERT INTO Suppliers (supplier_name, contact_info, email) VALUES (?, ?, ?)", sample_suppliers)
+        conn.commit()
+    return conn
+
+
+if "db_conn" not in st.session_state:
+    st.session_state.db_conn = get_db()
+
+conn = st.session_state.db_conn
+cursor = conn.cursor()
+
+st.title("Inventory Management System")
 st.markdown("---")
 
-# Sidebar navigation
-st.sidebar.title("🔧 Navigation")
+st.sidebar.title("Navigation")
 page = st.sidebar.radio(
     "Select an option:",
-    ["🏠 Dashboard", "➕ Add Product", "📋 View Products", "👥 Add Supplier", 
-     "🛒 Purchase", "💳 Sell", "⚠️ Low Stock", "📊 Reports"]
+    ["Dashboard", "Add Product", "View Products", "Add Supplier",
+     "Purchase", "Sell", "Low Stock", "Reports"]
 )
 
-# Demo data
-demo_products = [
-    {"ID": 1, "Product Name": "Laptop", "Price ($)": 899.99, "Stock Quantity": 15},
-    {"ID": 2, "Product Name": "Mouse", "Price ($)": 25.50, "Stock Quantity": 5},
-    {"ID": 3, "Product Name": "Keyboard", "Price ($)": 75.00, "Stock Quantity": 8},
-    {"ID": 4, "Product Name": "Monitor", "Price ($)": 299.99, "Stock Quantity": 3},
-    {"ID": 5, "Product Name": "USB Cable", "Price ($)": 9.99, "Stock Quantity": 50},
-]
-
-demo_suppliers = [
-    {"ID": 1, "Supplier Name": "Tech Supplies Co.", "Contact": "555-1001", "Email": "info@techsupply.com"},
-    {"ID": 2, "Supplier Name": "Electronics Plus", "Contact": "555-2002", "Email": "sales@eplus.com"},
-    {"ID": 3, "Supplier Name": "Global Hardware", "Contact": "555-3003", "Email": "contact@globalhw.com"},
-]
-
-# ============ Dashboard ============
-if page == "🏠 Dashboard":
+if page == "Dashboard":
     st.header("Dashboard Overview")
-    
     col1, col2, col3, col4 = st.columns(4)
-    
-    total_products = len(demo_products)
-    col1.metric("📦 Total Products", total_products)
-    
-    total_stock = sum([p["Stock Quantity"] for p in demo_products])
-    col2.metric("📊 Total Stock", total_stock)
-    
-    total_suppliers = len(demo_suppliers)
-    col3.metric("👥 Total Suppliers", total_suppliers)
-    
-    low_stock = sum([1 for p in demo_products if p["Stock Quantity"] < 10])
-    col4.metric("⚠️ Low Stock Items", low_stock)
 
-# ============ Add Product ============
-elif page == "➕ Add Product":
+    cursor.execute("SELECT COUNT(*) FROM Products")
+    col1.metric("Total Products", cursor.fetchone()[0])
+
+    cursor.execute("SELECT COALESCE(SUM(stock_quantity), 0) FROM Products")
+    col2.metric("Total Stock", cursor.fetchone()[0])
+
+    cursor.execute("SELECT COUNT(*) FROM Suppliers")
+    col3.metric("Total Suppliers", cursor.fetchone()[0])
+
+    cursor.execute("SELECT COUNT(*) FROM Products WHERE stock_quantity < 10")
+    col4.metric("Low Stock Items", cursor.fetchone()[0])
+
+    st.markdown("---")
+    st.subheader("Recent Transactions")
+    cursor.execute("""
+        SELECT p.product_name, t.transaction_type, t.quantity, t.transaction_date
+        FROM Transactions t JOIN Products p ON t.product_id = p.product_id
+        ORDER BY t.transaction_id DESC LIMIT 10
+    """)
+    rows = cursor.fetchall()
+    if rows:
+        df = pd.DataFrame(rows, columns=["Product", "Type", "Quantity", "Date"])
+        st.dataframe(df, use_container_width=True, hide_index=True)
+    else:
+        st.info("No transactions yet.")
+
+elif page == "Add Product":
     st.header("Add New Product")
-    
     with st.form("add_product_form"):
         col1, col2 = st.columns(2)
-        
         with col1:
-            product_name = st.text_input("Product Name", placeholder="e.g., Wireless Headphones")
-        
+            product_name = st.text_input("Product Name")
         with col2:
             price = st.number_input("Price ($)", min_value=0.0, step=0.01)
-        
         stock_quantity = st.number_input("Stock Quantity", min_value=0, step=1)
-        
-        submitted = st.form_submit_button("✅ Add Product")
-        
+        submitted = st.form_submit_button("Add Product")
         if submitted:
             if product_name.strip():
-                st.success(f"✅ Product '{product_name}' added successfully!")
+                cursor.execute(
+                    "INSERT INTO Products (product_name, price, stock_quantity) VALUES (?, ?, ?)",
+                    (product_name.strip(), price, stock_quantity)
+                )
+                conn.commit()
+                st.success(f"Product '{product_name}' added successfully!")
+                st.rerun()
             else:
                 st.warning("Product name cannot be empty")
 
-# ============ View Products ============
-elif page == "📋 View Products":
+elif page == "View Products":
     st.header("All Products")
-    
-    if demo_products:
-        df = pd.DataFrame(demo_products)
+    cursor.execute("SELECT product_id, product_name, price, stock_quantity FROM Products ORDER BY product_id")
+    products = cursor.fetchall()
+    if products:
+        df = pd.DataFrame(products, columns=["ID", "Product Name", "Price ($)", "Stock Quantity"])
         st.dataframe(df, use_container_width=True, hide_index=True)
-        
-        # Summary statistics
         col1, col2, col3 = st.columns(3)
         col1.metric("Total Products", len(df))
         col2.metric("Total Stock Value", f"${(df['Price ($)'] * df['Stock Quantity']).sum():.2f}")
         col3.metric("Avg Price", f"${df['Price ($)'].mean():.2f}")
+
+        st.subheader("Delete Product")
+        del_id = st.selectbox("Select product to delete", df["ID"].tolist(),
+                              format_func=lambda x: f"{x} - {df[df['ID']==x]['Product Name'].values[0]}")
+        if st.button("Delete", type="secondary"):
+            cursor.execute("DELETE FROM Products WHERE product_id = ?", (del_id,))
+            conn.commit()
+            st.success("Product deleted!")
+            st.rerun()
     else:
         st.info("No products found. Add products using the 'Add Product' page.")
 
-# ============ Add Supplier ============
-elif page == "👥 Add Supplier":
+elif page == "Add Supplier":
     st.header("Add New Supplier")
-    
     with st.form("add_supplier_form"):
         col1, col2 = st.columns(2)
-        
         with col1:
-            supplier_name = st.text_input("Supplier Name", placeholder="e.g., Tech Wholesale Inc.")
-        
+            supplier_name = st.text_input("Supplier Name")
         with col2:
-            contact = st.text_input("Contact Number", placeholder="e.g., 555-1234")
-        
-        email = st.text_input("Email Address", placeholder="e.g., contact@supplier.com")
-        
-        submitted = st.form_submit_button("✅ Add Supplier")
-        
+            contact = st.text_input("Contact Number")
+        email = st.text_input("Email Address")
+        submitted = st.form_submit_button("Add Supplier")
         if submitted:
             if supplier_name.strip():
-                st.success(f"✅ Supplier '{supplier_name}' added successfully!")
+                cursor.execute(
+                    "INSERT INTO Suppliers (supplier_name, contact_info, email) VALUES (?, ?, ?)",
+                    (supplier_name.strip(), contact, email)
+                )
+                conn.commit()
+                st.success(f"Supplier '{supplier_name}' added successfully!")
+                st.rerun()
             else:
                 st.warning("Supplier name cannot be empty")
 
-# ============ Purchase Product ============
-elif page == "🛒 Purchase":
+    st.markdown("---")
+    st.subheader("Current Suppliers")
+    cursor.execute("SELECT supplier_id, supplier_name, contact_info, email FROM Suppliers")
+    suppliers = cursor.fetchall()
+    if suppliers:
+        df = pd.DataFrame(suppliers, columns=["ID", "Name", "Contact", "Email"])
+        st.dataframe(df, use_container_width=True, hide_index=True)
+
+elif page == "Purchase":
     st.header("Purchase Product")
-    
-    if demo_products:
-        product_names = [p["Product Name"] for p in demo_products]
-        
+    cursor.execute("SELECT product_id, product_name, stock_quantity FROM Products")
+    products = cursor.fetchall()
+    if products:
+        product_dict = {name: (pid, stock) for pid, name, stock in products}
         with st.form("purchase_form"):
-            product_name = st.selectbox("Select Product", product_names)
+            product_name = st.selectbox("Select Product", list(product_dict.keys()))
             quantity = st.number_input("Quantity to Purchase", min_value=1, step=1)
-            
-            submitted = st.form_submit_button("✅ Purchase")
-            
+            submitted = st.form_submit_button("Purchase")
             if submitted:
-                st.success(f"✅ Purchased {quantity} units of {product_name}")
+                pid, _ = product_dict[product_name]
+                cursor.execute("UPDATE Products SET stock_quantity = stock_quantity + ? WHERE product_id = ?",
+                               (quantity, pid))
+                cursor.execute(
+                    "INSERT INTO Transactions (product_id, transaction_type, quantity, transaction_date) VALUES (?, 'Purchase', ?, ?)",
+                    (pid, quantity, datetime.now().isoformat())
+                )
+                conn.commit()
+                st.success(f"Purchased {quantity} units of {product_name}")
+                st.rerun()
     else:
         st.warning("No products available. Add products first.")
 
-# ============ Sell Product ============
-elif page == "💳 Sell":
+elif page == "Sell":
     st.header("Sell Product")
-    
-    if demo_products:
-        product_options = [f"{p['Product Name']} (Stock: {p['Stock Quantity']})" for p in demo_products]
-        
+    cursor.execute("SELECT product_id, product_name, stock_quantity FROM Products")
+    products = cursor.fetchall()
+    if products:
+        product_dict = {f"{name} (Stock: {stock})": (pid, stock) for pid, name, stock in products}
         with st.form("sell_form"):
-            product_choice = st.selectbox("Select Product", product_options)
-            
-            # Extract product and available stock
-            selected_product = next((p for p in demo_products if p['Product Name'] in product_choice), None)
-            available_stock = selected_product["Stock Quantity"] if selected_product else 0
-            
+            product_choice = st.selectbox("Select Product", list(product_dict.keys()))
+            pid, available_stock = product_dict[product_choice]
             quantity = st.number_input("Quantity to Sell", min_value=1, max_value=available_stock, step=1)
-            
-            submitted = st.form_submit_button("✅ Sell")
-            
+            submitted = st.form_submit_button("Sell")
             if submitted:
-                st.success(f"✅ Sold {quantity} units of {selected_product['Product Name']}")
+                cursor.execute("UPDATE Products SET stock_quantity = stock_quantity - ? WHERE product_id = ?",
+                               (quantity, pid))
+                cursor.execute(
+                    "INSERT INTO Transactions (product_id, transaction_type, quantity, transaction_date) VALUES (?, 'Sale', ?, ?)",
+                    (pid, quantity, datetime.now().isoformat())
+                )
+                conn.commit()
+                st.success(f"Sold {quantity} units")
+                st.rerun()
     else:
-        st.warning("No products available. Add products first.")
+        st.warning("No products available.")
 
-# ============ Low Stock Report ============
-elif page == "⚠️ Low Stock":
-    st.header("Low Stock Alert")
-    
-    low_stock_items = [p for p in demo_products if p["Stock Quantity"] < 10]
-    
-    if low_stock_items:
-        df_low = pd.DataFrame(low_stock_items)
-        st.dataframe(df_low, use_container_width=True, hide_index=True)
-        st.warning(f"⚠️ {len(low_stock_items)} items have low stock levels!")
+elif page == "Low Stock":
+    st.header("Low Stock Report")
+    cursor.execute("SELECT product_id, product_name, stock_quantity FROM Products WHERE stock_quantity < 10 ORDER BY stock_quantity")
+    low_stock = cursor.fetchall()
+    if low_stock:
+        df = pd.DataFrame(low_stock, columns=["ID", "Product Name", "Stock Quantity"])
+        st.warning(f"{len(df)} products have low stock (less than 10 units)")
+        st.dataframe(df, use_container_width=True, hide_index=True)
     else:
-        st.success("✅ All items have sufficient stock!")
+        st.success("No low stock items! Everything is well stocked.")
 
-# ============ Reports ============
-elif page == "📊 Reports":
+elif page == "Reports":
     st.header("Sales & Inventory Reports")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
+    cursor.execute("""
+        SELECT product_name, stock_quantity, price, (stock_quantity * price) as total_value
+        FROM Products ORDER BY total_value DESC
+    """)
+    report_data = cursor.fetchall()
+    if report_data:
+        df = pd.DataFrame(report_data, columns=["Product Name", "Stock Quantity", "Price ($)", "Total Value ($)"])
+
         st.subheader("Inventory Summary")
-        df_products = pd.DataFrame(demo_products)
-        st.bar_chart(df_products.set_index("Product Name")["Stock Quantity"])
-    
-    with col2:
-        st.subheader("Product Value Distribution")
-        df_products["Product Value"] = df_products["Price ($)"] * df_products["Stock Quantity"]
-        st.bar_chart(df_products.set_index("Product Name")["Product Value"])
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Total Products", len(df))
+        col2.metric("Total Items in Stock", int(df["Stock Quantity"].sum()))
+        col3.metric("Total Inventory Value", f"${df['Total Value ($)'].sum():.2f}")
+
+        st.subheader("Product Details")
+        st.dataframe(df, use_container_width=True, hide_index=True)
+
+        st.subheader("Analytics")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.bar_chart(df.set_index("Product Name")["Stock Quantity"])
+        with col2:
+            st.bar_chart(df.set_index("Product Name")["Total Value ($)"])
+    else:
+        st.info("No data available for reports.")
 
 st.sidebar.markdown("---")
-st.sidebar.info("📌 **Demo Mode** - This is a preview. Deploy to see live data from your MySQL database.")
+st.sidebar.info("This app uses in-memory SQLite. Data resets on page refresh.")
