@@ -1,40 +1,26 @@
-# Python Virtual Environments
-venv/
-.venv/
-ENV/
-env/
-
 # Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
-.Python
+.venv/
+venv/
+ENV/
+env/
+
+# Build
 build/
-develop-eggs/
 dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
 *.egg-info/
-.installed.cfg
 *.egg
-
-# PyInstaller
 *.spec
-build/
-dist/
-*.exe
-*.app
-*.dmg
 
-# IDEs
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
 .vscode/
 .idea/
 *.swp
@@ -44,20 +30,16 @@ dist/
 .DS_Store
 Thumbs.db
 
-# Jekyll
-_site/
-.jekyll-cache/
-.jekyll-metadata
+# PyInstaller
+*.exe
+*.app
+*.dmg
 
-# Testing
+# Tests
 .pytest_cache/
 .coverage
 htmlcov/
 
-# Environment files
-.env
-.env.local
-.env.*.local
-
-# Streamlit secrets
-.streamlit/secrets.toml
+# Database backups
+backups/
+*.sql.gz

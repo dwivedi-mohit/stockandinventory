@@ -15,7 +15,7 @@ class InventoryApp:
         self.cursor = None
         self.connect_db()
         
-        # Create GUI
+       
         self.create_widgets()
         
     def connect_db(self):
