@@ -10,6 +10,54 @@ from inventory.services.auth_service import AuthService
 
 import web.app  # noqa: F401 — register routes
 
+
+def _split_sql_statements(sql):
+    statements = []
+    buffer = []
+    for line in sql.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith('--'):
+            continue
+        buffer.append(line)
+        if stripped.endswith(';'):
+            statements.append('\n'.join(buffer).rstrip(';').strip())
+            buffer = []
+    tail = '\n'.join(buffer).strip()
+    if tail:
+        statements.append(tail)
+    return [s for s in statements if s]
+
+
+def ensure_schema(db):
+    existing = db.execute_query("SHOW TABLES LIKE 'users'")
+    if existing:
+        print('Schema already present.')
+        return
+
+    schema_path = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), 'database_setup_railway.sql'
+    )
+    if not os.path.exists(schema_path):
+        print(f'WARNING: schema file not found at {schema_path}; skipping schema setup.')
+        return
+
+    with open(schema_path) as f:
+        sql = f.read()
+
+    conn = db.get_connection()
+    cursor = conn.cursor()
+    try:
+        for statement in _split_sql_statements(sql):
+            cursor.execute(statement)
+        conn.commit()
+        print('Schema created.')
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        cursor.close()
+
+
 if __name__ in {'__main__', '__mp_main__'}:
     import time
     import traceback
@@ -47,6 +95,13 @@ if __name__ in {'__main__', '__mp_main__'}:
         sys.exit(1)
 
     print(f'Connected to MySQL: {db._config["host"]}:{db._config["port"]}/{db._config["database"]}')
+
+    try:
+        ensure_schema(db)
+    except Exception as exc:
+        print('WARNING: schema setup failed:')
+        print(f'  {type(exc).__name__}: {exc}')
+        traceback.print_exc()
 
     auth = AuthService(db)
     try:
