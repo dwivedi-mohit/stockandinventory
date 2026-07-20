@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: invictus
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python web_main.py
+    healthCheckPath: /login
+    envVars:
+      - key: DB_HOST
+        value: localhost
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_USER
+        value: invictus
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        value: inventory_db
+      - key: APP_TITLE
+        value: Invictus
+      - key: APP_COMPANY
+        value: BEE tech
+databases:
+  - name: invictus-db
+    plan: free
+    databaseName: inventory_db
+    user: invictus
