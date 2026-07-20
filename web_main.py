@@ -11,10 +11,21 @@ from inventory.services.auth_service import AuthService
 import web.app  # noqa: F401 — register routes
 
 if __name__ in {'__main__', '__mp_main__'}:
+    import traceback
+
     db = DatabaseManager()
-    if not db.test_connection():
+    try:
+        connected = db.test_connection()
+    except Exception as exc:
+        connected = False
+        print('ERROR: Exception while testing MySQL connection:')
+        print(f'  {type(exc).__name__}: {exc}')
+
+    if not connected:
         print('ERROR: Could not connect to MySQL database.')
         print(f'Host: {db._config.get("host", "localhost")}')
+        print(f'Port: {db._config.get("port", 3306)}')
+        print(f'User: {db._config.get("user", "root")}')
         print(f'Database: {db._config.get("database", "inventory_db")}')
         sys.exit(1)
 
@@ -24,8 +35,10 @@ if __name__ in {'__main__', '__mp_main__'}:
     try:
         auth.seed_admin()
         print('Admin account ready (admin/admin123)')
-    except Exception:
-        pass
+    except Exception as exc:
+        print('WARNING: seed_admin() failed (schema may not be loaded):')
+        print(f'  {type(exc).__name__}: {exc}')
+        traceback.print_exc()
 
     port = int(os.getenv('PORT', '8080'))
     print()
