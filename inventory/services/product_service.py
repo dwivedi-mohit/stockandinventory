@@ -1,24 +1,13 @@
 from inventory.exceptions import ValidationError, NotFoundError
-from inventory.services.activity_service import ActivityService
-from inventory.session import session_manager
+from inventory.services.base_service import BaseService
 
 
-class ProductService:
+class ProductService(BaseService):
     def __init__(self, db):
-        self.db = db
-        self._activity = ActivityService(db)
-
-    def _log(self, action, entity_id=None, details=None):
-        if session_manager.is_authenticated:
-            self._activity.log(
-                user_id=session_manager.current_user.user_id,
-                action=action,
-                entity_type="product",
-                entity_id=entity_id,
-                details=details,
-            )
+        super().__init__(db, "product")
 
     def get_all(self, search="", category_id=None, low_stock=False):
+        """Fetch products with optional search, category filter, or low stock flag."""
         query = """SELECT p.product_id, p.name, p.sku, p.barcode,
                           c.name as category_name, p.cost_price, p.selling_price,
                           p.stock_quantity, p.min_stock_level, p.is_active
@@ -43,6 +32,7 @@ class ProductService:
         return self.db.execute_query(query, params, dictionary=True)
 
     def get_by_id(self, product_id):
+        """Retrieve a single product by its ID, raises NotFoundError if missing."""
         result = self.db.execute_query(
             """SELECT p.*, c.name as category_name
                FROM products p
@@ -57,6 +47,7 @@ class ProductService:
 
     def create(self, name, sku, selling_price, cost_price=0, category_id=None,
                stock_quantity=0, min_stock_level=10, barcode="", description=""):
+        """Create a new product with SKU uniqueness check."""
         existing = self.db.execute_query(
             "SELECT product_id FROM products WHERE sku = %s", (sku,)
         )

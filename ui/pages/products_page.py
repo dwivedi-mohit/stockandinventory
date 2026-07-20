@@ -24,12 +24,12 @@ class ProductsPage(QWidget):
         layout.setSpacing(16)
 
         header = QHBoxLayout()
-        title = QLabel("📦 Products")
+        title = QLabel("Products")
         title.setObjectName("sectionTitle")
         header.addWidget(title)
         header.addStretch()
 
-        self.delete_btn = QPushButton("🗑 Delete")
+        self.delete_btn = QPushButton("Delete")
         self.delete_btn.setCursor(Qt.PointingHandCursor)
         self.delete_btn.setStyleSheet("background-color: #F44336;")
         self.delete_btn.clicked.connect(self._on_delete)
@@ -70,7 +70,7 @@ class ProductsPage(QWidget):
             FormField("name", "Product Name", "text", required=True,
                       placeholder="Enter product name", max_length=255),
             FormField("sku", "SKU", "text", required=True,
-                      placeholder="Auto-generated or enter manually"),
+                      placeholder="Unique product SKU"),
             FormField("barcode", "Barcode", "text", placeholder="EAN-13 barcode"),
             FormField("category_id", "Category", "combobox", items=cat_items),
             FormField("cost_price", "Cost Price", "decimal", default=0.00,
@@ -93,7 +93,7 @@ class ProductsPage(QWidget):
                     )
                 self.service.create(**data)
                 self.refresh()
-                QMessageBox.information(self, "Success", "✅ Product added successfully!")
+                QMessageBox.information(self, "Success", "Product added successfully!")
             except ValidationError as e:
                 QMessageBox.warning(self, "Validation Error", str(e))
             except Exception as e:
@@ -137,7 +137,7 @@ class ProductsPage(QWidget):
             try:
                 self.service.update(row["product_id"], **data)
                 self.refresh()
-                QMessageBox.information(self, "Success", "✅ Product updated successfully!")
+                QMessageBox.information(self, "Success", "Product updated successfully!")
             except ValidationError as e:
                 QMessageBox.warning(self, "Validation Error", str(e))
             except Exception as e:
@@ -157,6 +157,6 @@ class ProductsPage(QWidget):
             try:
                 self.service.delete(row["product_id"])
                 self.refresh()
-                QMessageBox.information(self, "Success", "✅ Product deleted.")
+                QMessageBox.information(self, "Success", "Product deleted.")
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"Failed to delete: {e}")

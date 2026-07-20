@@ -1,15 +1,15 @@
+import csv
 import os
 from datetime import date, timedelta
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel,
     QComboBox, QDateEdit, QFrame, QFileDialog, QMessageBox,
-    QProgressBar, QSizePolicy,
+    QSizePolicy,
 )
 from PySide6.QtCore import Qt, QDate, QTimer
 from PySide6.QtGui import QFont
 
 from inventory.services.report_service import ReportService
-from inventory.services.export_service import ExportService
 from ui.components.table_widget import DataTableView
 
 
@@ -126,7 +126,6 @@ class ReportsPage(QWidget):
         super().__init__(parent)
         self.db = db
         self.service = ReportService(db)
-        self.export_service = ExportService(db)
         self._current_data = []
         self._current_headers = []
         self._current_report_key = ""
@@ -137,7 +136,7 @@ class ReportsPage(QWidget):
         layout.setContentsMargins(24, 24, 24, 24)
         layout.setSpacing(16)
 
-        title = QLabel("📈 Reports & Analytics")
+        title = QLabel("Reports & Analytics")
         title.setObjectName("sectionTitle")
         layout.addWidget(title)
 
@@ -175,7 +174,7 @@ class ReportsPage(QWidget):
         row1.addWidget(self.group_combo)
 
         row1.addStretch()
-        self.generate_btn = QPushButton("🔄 Generate")
+        self.generate_btn = QPushButton("Generate")
         self.generate_btn.setCursor(Qt.PointingHandCursor)
         self.generate_btn.clicked.connect(self._generate_report)
         row1.addWidget(self.generate_btn)
@@ -185,21 +184,9 @@ class ReportsPage(QWidget):
         export_row = QHBoxLayout()
         export_row.addWidget(QLabel("Export:"))
 
-        self.pdf_btn = QPushButton("📄 PDF")
-        self.pdf_btn.setCursor(Qt.PointingHandCursor)
-        self.pdf_btn.clicked.connect(lambda: self._export("pdf"))
-        self.pdf_btn.setEnabled(False)
-        export_row.addWidget(self.pdf_btn)
-
-        self.excel_btn = QPushButton("📊 Excel")
-        self.excel_btn.setCursor(Qt.PointingHandCursor)
-        self.excel_btn.clicked.connect(lambda: self._export("excel"))
-        self.excel_btn.setEnabled(False)
-        export_row.addWidget(self.excel_btn)
-
-        self.csv_btn = QPushButton("📃 CSV")
+        self.csv_btn = QPushButton("CSV")
         self.csv_btn.setCursor(Qt.PointingHandCursor)
-        self.csv_btn.clicked.connect(lambda: self._export("csv"))
+        self.csv_btn.clicked.connect(self._export_csv)
         self.csv_btn.setEnabled(False)
         export_row.addWidget(self.csv_btn)
 
@@ -277,8 +264,6 @@ class ReportsPage(QWidget):
             self.table.set_data(data)
 
             self._update_summary(key, data)
-            self.pdf_btn.setEnabled(bool(data))
-            self.excel_btn.setEnabled(bool(data))
             self.csv_btn.setEnabled(bool(data))
 
         except Exception as e:
@@ -289,7 +274,7 @@ class ReportsPage(QWidget):
 
         finally:
             self.generate_btn.setEnabled(True)
-            self.generate_btn.setText("🔄 Generate")
+            self.generate_btn.setText("Generate")
 
     def _update_summary(self, key, data):
         if not data:
@@ -308,7 +293,7 @@ class ReportsPage(QWidget):
             total_profit = sum(float(r.get("total_profit", 0) or 0) for r in data)
             self.summary_label.setText(f"{count} transactions | Total Profit: ${total_profit:,.2f}")
         elif key == "low_stock":
-            self.summary_label.setText(f"⚠️ {count} products below minimum stock level")
+            self.summary_label.setText(f"{count} products below minimum stock level")
         elif key == "best_selling":
             total_rev = sum(float(r.get("total_revenue", 0) or 0) for r in data)
             self.summary_label.setText(f"Top {count} products | Revenue: ${total_rev:,.2f}")
@@ -320,7 +305,7 @@ class ReportsPage(QWidget):
         else:
             self.summary_label.setText(f"{count} rows")
 
-    def _export(self, fmt):
+    def _export_csv(self):
         if not self._current_data:
             QMessageBox.warning(self, "No Data", "Generate a report first.")
             return
@@ -330,57 +315,20 @@ class ReportsPage(QWidget):
         headers = self._current_headers
         display_names = [h["header"] for h in REPORT_DISPLAY_HEADERS.get(key, [])]
 
-        export_data = []
-        for row in self._current_data:
-            export_row = {}
-            for h in headers:
-                export_row[h] = row.get(h, "")
-            export_data.append(export_row)
+        filepath, _ = QFileDialog.getSaveFileName(
+            self, f"Export {report_name} as CSV",
+            f"{report_name}_{date.today()}.csv",
+            "CSV Files (*.csv)",
+        )
+        if not filepath:
+            return
 
-        if fmt == "pdf":
-            filepath, _ = QFileDialog.getSaveFileName(
-                self, f"Export {report_name} as PDF",
-                f"{report_name}_{date.today()}.pdf",
-                "PDF Files (*.pdf)",
-            )
-            if filepath:
-                try:
-                    self.export_service.to_pdf(
-                        export_data, display_names, filepath,
-                        title=report_name,
-                        subtitle=f"Generated: {date.today()}",
-                    )
-                    QMessageBox.information(self, "Success", f"✅ PDF exported to:\n{filepath}")
-                except Exception as e:
-                    QMessageBox.critical(self, "Export Error", f"Failed to export PDF: {e}")
-
-        elif fmt == "excel":
-            filepath, _ = QFileDialog.getSaveFileName(
-                self, f"Export {report_name} as Excel",
-                f"{report_name}_{date.today()}.xlsx",
-                "Excel Files (*.xlsx)",
-            )
-            if filepath:
-                try:
-                    self.export_service.to_excel(
-                        export_data, display_names, filepath,
-                        title=report_name,
-                    )
-                    QMessageBox.information(self, "Success", f"✅ Excel exported to:\n{filepath}")
-                except Exception as e:
-                    QMessageBox.critical(self, "Export Error", f"Failed to export Excel: {e}")
-
-        elif fmt == "csv":
-            filepath, _ = QFileDialog.getSaveFileName(
-                self, f"Export {report_name} as CSV",
-                f"{report_name}_{date.today()}.csv",
-                "CSV Files (*.csv)",
-            )
-            if filepath:
-                try:
-                    self.export_service.to_csv(
-                        export_data, display_names, filepath,
-                    )
-                    QMessageBox.information(self, "Success", f"✅ CSV exported to:\n{filepath}")
-                except Exception as e:
-                    QMessageBox.critical(self, "Export Error", f"Failed to export CSV: {e}")
+        try:
+            with open(filepath, "w", newline="", encoding="utf-8") as f:
+                writer = csv.writer(f)
+                writer.writerow(display_names)
+                for row in self._current_data:
+                    writer.writerow([str(row.get(h, "")) for h in headers])
+            QMessageBox.information(self, "Success", f"CSV exported to:\n{filepath}")
+        except Exception as e:
+            QMessageBox.critical(self, "Export Error", f"Failed to export CSV: {e}")

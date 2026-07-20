@@ -89,7 +89,7 @@ class DashboardPage(QWidget):
         layout.setSpacing(20)
 
         header_row = QHBoxLayout()
-        title = QLabel("📊 Dashboard")
+        title = QLabel("Dashboard")
         title.setObjectName("sectionTitle")
         header_row.addWidget(title)
 
@@ -103,16 +103,16 @@ class DashboardPage(QWidget):
         cards_grid = QGridLayout()
         cards_grid.setSpacing(16)
 
-        self.product_card = AnimatedMetricCard("Total Products", "📦", color="#1A73E8")
+        self.product_card = AnimatedMetricCard("Total Products", "-", color="#1A73E8")
         cards_grid.addWidget(self.product_card, 0, 0)
 
-        self.stock_card = AnimatedMetricCard("Total Items in Stock", "📊", color="#4CAF50")
+        self.stock_card = AnimatedMetricCard("Total Items in Stock", "-", color="#4CAF50")
         cards_grid.addWidget(self.stock_card, 0, 1)
 
-        self.value_card = AnimatedMetricCard("Inventory Value", "💰", suffix="$", color="#FF9800")
+        self.value_card = AnimatedMetricCard("Inventory Value", "$", suffix="", color="#FF9800")
         cards_grid.addWidget(self.value_card, 0, 2)
 
-        self.low_stock_card = AnimatedMetricCard("Low Stock Alerts", "⚠️", color="#F44336")
+        self.low_stock_card = AnimatedMetricCard("Low Stock Alerts", "!", color="#F44336")
         cards_grid.addWidget(self.low_stock_card, 0, 3)
 
         layout.addLayout(cards_grid)
@@ -123,7 +123,7 @@ class DashboardPage(QWidget):
         self.stock_chart_frame = QFrame()
         self.stock_chart_frame.setObjectName("card")
         stock_chart_layout = QVBoxLayout(self.stock_chart_frame)
-        stock_chart_label = QLabel("📦 Stock by Product")
+        stock_chart_label = QLabel("Stock by Product")
         stock_chart_label.setObjectName("cardLabel")
         stock_chart_layout.addWidget(stock_chart_label)
 
@@ -134,7 +134,7 @@ class DashboardPage(QWidget):
         self.value_chart_frame = QFrame()
         self.value_chart_frame.setObjectName("card")
         value_chart_layout = QVBoxLayout(self.value_chart_frame)
-        value_chart_label = QLabel("💰 Inventory Value by Product")
+        value_chart_label = QLabel("Inventory Value by Product")
         value_chart_label.setObjectName("cardLabel")
         value_chart_layout.addWidget(value_chart_label)
 

@@ -1,25 +1,13 @@
-from passlib.hash import bcrypt
 from inventory.exceptions import ValidationError, NotFoundError, AuthenticationError
 from inventory.utils.validators import Validators
-from inventory.config import PASSWORD_HASH_ROUNDS
-from inventory.services.activity_service import ActivityService
+from inventory.utils.password_utils import hash_password, verify_password
+from inventory.services.base_service import BaseService
 from inventory.session import session_manager
 
 
-class UserService:
+class UserService(BaseService):
     def __init__(self, db):
-        self.db = db
-        self._activity = ActivityService(db)
-
-    def _log(self, action, entity_id=None, details=None):
-        if session_manager.is_authenticated:
-            self._activity.log(
-                user_id=session_manager.current_user.user_id,
-                action=action,
-                entity_type="user",
-                entity_id=entity_id,
-                details=details,
-            )
+        super().__init__(db, "user")
 
     def get_all(self):
         return self.db.execute_query(
@@ -50,7 +38,7 @@ class UserService:
         if not is_valid:
             raise ValidationError(msg)
 
-        password_hash = bcrypt.using(rounds=PASSWORD_HASH_ROUNDS).hash(password)
+        password_hash = hash_password(password)
         self.db.execute_update(
             """INSERT INTO users (username, email, password_hash, full_name, role, is_active)
                VALUES (%s, %s, %s, %s, %s, TRUE)""",
@@ -79,7 +67,7 @@ class UserService:
         if not is_valid:
             raise ValidationError(msg)
 
-        password_hash = bcrypt.using(rounds=PASSWORD_HASH_ROUNDS).hash(new_password)
+        password_hash = hash_password(new_password)
         self.db.execute_update(
             "UPDATE users SET password_hash = %s WHERE user_id = %s",
             (password_hash, user_id),
@@ -94,14 +82,14 @@ class UserService:
         if not user:
             raise NotFoundError("User")
 
-        if not bcrypt.verify(current_password, user[0]["password_hash"]):
+        if not verify_password(current_password, user[0]["password_hash"]):
             raise AuthenticationError("Current password is incorrect.")
 
         is_valid, msg = Validators.password_strength(new_password)
         if not is_valid:
             raise ValidationError(msg)
 
-        password_hash = bcrypt.using(rounds=PASSWORD_HASH_ROUNDS).hash(new_password)
+        password_hash = hash_password(new_password)
         self.db.execute_update(
             "UPDATE users SET password_hash = %s WHERE user_id = %s",
             (password_hash, user_id),

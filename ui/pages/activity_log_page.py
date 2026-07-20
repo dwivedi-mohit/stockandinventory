@@ -22,7 +22,7 @@ class ActivityLogPage(QWidget):
         layout.setSpacing(16)
 
         header = QHBoxLayout()
-        title = QLabel("📋 Activity Log")
+        title = QLabel("Activity Log")
         title.setObjectName("sectionTitle")
         header.addWidget(title)
         header.addStretch()
@@ -41,7 +41,7 @@ class ActivityLogPage(QWidget):
         self.action_combo.currentIndexChanged.connect(self.refresh)
         header.addWidget(self.action_combo)
 
-        self.refresh_btn = QPushButton("🔄 Refresh")
+        self.refresh_btn = QPushButton("Refresh")
         self.refresh_btn.setCursor(Qt.PointingHandCursor)
         self.refresh_btn.clicked.connect(self.refresh)
         header.addWidget(self.refresh_btn)

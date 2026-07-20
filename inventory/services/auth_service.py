@@ -1,8 +1,7 @@
-from passlib.hash import bcrypt
 from inventory.exceptions import AuthenticationError, ValidationError, NotFoundError
 from inventory.utils.validators import Validators
+from inventory.utils.password_utils import hash_password, verify_password
 from inventory.session import session_manager
-from inventory.config import PASSWORD_HASH_ROUNDS
 
 
 class AuthService:
@@ -29,7 +28,7 @@ class AuthService:
         if existing:
             raise ValidationError("Username or email already exists.", field="username")
 
-        password_hash = bcrypt.using(rounds=PASSWORD_HASH_ROUNDS).hash(password)
+        password_hash = hash_password(password)
 
         user_id = None
         cursor = None
@@ -56,6 +55,7 @@ class AuthService:
         return user_id
 
     def authenticate(self, username_or_email, password):
+        """Verify credentials and create a user session on success."""
         if not username_or_email or not password:
             raise AuthenticationError("Username and password are required.")
 
@@ -74,7 +74,7 @@ class AuthService:
         if not user["is_active"]:
             raise AuthenticationError("This account has been deactivated. Contact an administrator.")
 
-        if not bcrypt.verify(password, user["password_hash"]):
+        if not verify_password(password, user["password_hash"]):
             raise AuthenticationError("Invalid username or password.")
 
         self.db.execute_update(
@@ -102,14 +102,14 @@ class AuthService:
         if not user:
             raise NotFoundError("User")
 
-        if not bcrypt.verify(old_password, user[0]["password_hash"]):
+        if not verify_password(old_password, user[0]["password_hash"]):
             raise AuthenticationError("Current password is incorrect.")
 
         is_valid, result = Validators.password_strength(new_password)
         if not is_valid:
             raise ValidationError(result, field="new_password")
 
-        new_hash = bcrypt.using(rounds=PASSWORD_HASH_ROUNDS).hash(new_password)
+        new_hash = hash_password(new_password)
         self.db.execute_update(
             "UPDATE users SET password_hash = %s WHERE user_id = %s",
             (new_hash, user_id),
@@ -124,7 +124,7 @@ class AuthService:
         if existing:
             return existing[0]["user_id"] if isinstance(existing[0], dict) else existing[0][0]
 
-        password_hash = bcrypt.using(rounds=PASSWORD_HASH_ROUNDS).hash(password)
+        password_hash = hash_password(password)
         self.db.execute_update(
             """INSERT INTO users (username, email, password_hash, full_name, role, is_active)
                VALUES (%s, %s, %s, %s, 'admin', TRUE)""",

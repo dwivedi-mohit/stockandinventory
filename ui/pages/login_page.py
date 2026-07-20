@@ -30,11 +30,13 @@ class LoginPage(QWidget):
         card_layout.setContentsMargins(40, 40, 40, 40)
         card_layout.setSpacing(16)
 
-        icon_label = QLabel("📦")
+        icon_label = QLabel("IMS")
         icon_label.setAlignment(Qt.AlignCenter)
         icon_font = QFont()
-        icon_font.setPointSize(48)
+        icon_font.setPointSize(36)
+        icon_font.setWeight(QFont.Bold)
         icon_label.setFont(icon_font)
+        icon_label.setStyleSheet("color: #1A73E8;")
         card_layout.addWidget(icon_label)
 
         title = QLabel("Inventory Management System")
@@ -80,11 +82,11 @@ class LoginPage(QWidget):
         self.password_input.returnPressed.connect(self._on_login)
         password_layout.addWidget(self.password_input)
 
-        self.toggle_btn = QPushButton("👁")
-        self.toggle_btn.setFixedWidth(40)
+        self.toggle_btn = QPushButton("Show")
+        self.toggle_btn.setFixedWidth(60)
         self.toggle_btn.setCursor(Qt.PointingHandCursor)
         self.toggle_btn.clicked.connect(self._toggle_password)
-        self.toggle_btn.setStyleSheet("background: transparent; font-size: 16px; padding: 4px;")
+        self.toggle_btn.setStyleSheet("background: transparent; font-size: 11px; padding: 4px;")
         password_layout.addWidget(self.toggle_btn)
         card_layout.addLayout(password_layout)
 
@@ -118,10 +120,10 @@ class LoginPage(QWidget):
     def _toggle_password(self):
         if self.password_input.echoMode() == QLineEdit.Password:
             self.password_input.setEchoMode(QLineEdit.Normal)
-            self.toggle_btn.setText("🙈")
+            self.toggle_btn.setText("Hide")
         else:
             self.password_input.setEchoMode(QLineEdit.Password)
-            self.toggle_btn.setText("👁")
+            self.toggle_btn.setText("Show")
 
     def _show_error(self, message):
         self.error_label.setText(message)

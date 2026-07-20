@@ -1,7 +1,20 @@
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
+
+def _load_env(path=".env"):
+    if not os.path.exists(path):
+        return
+    with open(path) as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, val = line.partition("=")
+            key, val = key.strip(), val.strip().strip("\"'")
+            os.environ.setdefault(key, val)
+
+
+_load_env()
 
 DB_CONFIG = {
     "host": os.getenv("DB_HOST") or os.getenv("MYSQLHOST") or "localhost",
@@ -17,4 +30,3 @@ APP_CONFIG = {
     "version": "1.0.0",
 }
 
-PASSWORD_HASH_ROUNDS = 12

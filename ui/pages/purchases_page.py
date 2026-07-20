@@ -24,12 +24,12 @@ class PurchasesPage(QWidget):
         layout.setSpacing(16)
 
         header = QHBoxLayout()
-        title = QLabel("🛒 Purchases")
+        title = QLabel("Purchases")
         title.setObjectName("sectionTitle")
         header.addWidget(title)
         header.addStretch()
 
-        self.new_purchase_btn = QPushButton("➕ New Purchase")
+        self.new_purchase_btn = QPushButton("+ New Purchase")
         self.new_purchase_btn.setCursor(Qt.PointingHandCursor)
         self.new_purchase_btn.clicked.connect(self._on_new_purchase)
         header.addWidget(self.new_purchase_btn)
@@ -108,6 +108,6 @@ class PurchasesPage(QWidget):
             try:
                 self.service.cancel(purchase_id)
                 self.refresh()
-                QMessageBox.information(self, "Success", "✅ Purchase cancelled.")
+                QMessageBox.information(self, "Success", "Purchase cancelled.")
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"Failed to cancel: {e}")

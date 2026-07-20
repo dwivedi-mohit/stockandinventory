@@ -2,24 +2,12 @@ import os
 import subprocess
 from datetime import datetime
 from inventory.exceptions import ValidationError, NotFoundError
-from inventory.services.activity_service import ActivityService
-from inventory.session import session_manager
+from inventory.services.base_service import BaseService
 
 
-class SettingsService:
+class SettingsService(BaseService):
     def __init__(self, db):
-        self.db = db
-        self._activity = ActivityService(db)
-
-    def _log(self, action, entity_id=None, details=None):
-        if session_manager.is_authenticated:
-            self._activity.log(
-                user_id=session_manager.current_user.user_id,
-                action=action,
-                entity_type="settings",
-                entity_id=entity_id,
-                details=details,
-            )
+        super().__init__(db, "settings")
 
     def get_company_settings(self):
         result = self.db.execute_query(

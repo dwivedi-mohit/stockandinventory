@@ -33,7 +33,7 @@ class SaleDialog(QDialog):
         layout.setSpacing(16)
         layout.setContentsMargins(24, 24, 24, 24)
 
-        title = QLabel("💳 New Sale Invoice")
+        title = QLabel("New Sale Invoice")
         title.setObjectName("sectionTitle")
         layout.addWidget(title)
 
@@ -97,7 +97,7 @@ class SaleDialog(QDialog):
         self.discount_spin.setValue(0)
         item_row.addWidget(self.discount_spin)
 
-        self.add_item_btn = QPushButton("➕ Add")
+        self.add_item_btn = QPushButton("+ Add")
         self.add_item_btn.setCursor(Qt.PointingHandCursor)
         self.add_item_btn.clicked.connect(self._add_item)
         item_row.addWidget(self.add_item_btn)
@@ -183,7 +183,7 @@ class SaleDialog(QDialog):
         cancel_btn.setCursor(Qt.PointingHandCursor)
         cancel_btn.clicked.connect(self.reject)
         button_row.addWidget(cancel_btn)
-        self.save_btn = QPushButton("✅ Complete Sale")
+        self.save_btn = QPushButton("Complete Sale")
         self.save_btn.setCursor(Qt.PointingHandCursor)
         self.save_btn.clicked.connect(self._on_save)
         button_row.addWidget(self.save_btn)
@@ -321,7 +321,7 @@ class SaleDialog(QDialog):
             )
             QMessageBox.information(
                 self, "Success",
-                f"✅ Sale #{sale_id} completed successfully!\n"
+                f"Sale #{sale_id} completed successfully!\n"
                 f"Total: ${getattr(self, '_grand_total', 0):.2f}\n"
                 f"Stock has been updated."
             )

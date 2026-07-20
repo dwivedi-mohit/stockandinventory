@@ -33,7 +33,7 @@ class UsersTab(QWidget):
         title.setObjectName("sectionTitle")
         toolbar.addWidget(title)
         toolbar.addStretch()
-        self.add_user_btn = QPushButton("➕ Add User")
+        self.add_user_btn = QPushButton("+ Add User")
         self.add_user_btn.setCursor(Qt.PointingHandCursor)
         self.add_user_btn.clicked.connect(self._add_user)
         toolbar.addWidget(self.add_user_btn)
@@ -80,7 +80,7 @@ class UsersTab(QWidget):
             try:
                 self.service.create(**data)
                 self.refresh()
-                QMessageBox.information(self, "Success", "✅ User added successfully!")
+                QMessageBox.information(self, "Success", "User added successfully!")
             except ValidationError as e:
                 QMessageBox.warning(self, "Error", str(e))
             except Exception as e:
@@ -143,7 +143,7 @@ class UsersTab(QWidget):
                 is_active=active_check.isChecked(),
             )
             self.refresh()
-            QMessageBox.information(dialog, "Success", "✅ User updated!")
+            QMessageBox.information(dialog, "Success", "User updated!")
             dialog.accept()
         except Exception as e:
             QMessageBox.critical(dialog, "Error", str(e))
@@ -154,7 +154,7 @@ class UsersTab(QWidget):
         if ok and pwd:
             try:
                 self.service.reset_password(user_id, pwd)
-                QMessageBox.information(self, "Success", "✅ Password reset successfully!")
+                QMessageBox.information(self, "Success", "Password reset successfully!")
             except ValidationError as e:
                 QMessageBox.warning(self, "Error", str(e))
 
@@ -167,7 +167,7 @@ class UsersTab(QWidget):
             try:
                 self.service.delete(user_id)
                 self.refresh()
-                QMessageBox.information(self, "Success", "✅ User deleted.")
+                QMessageBox.information(self, "Success", "User deleted.")
             except Exception as e:
                 QMessageBox.critical(self, "Error", str(e))
 
@@ -223,7 +223,7 @@ class CompanyTab(QWidget):
 
         layout.addWidget(form_frame)
 
-        self.save_btn = QPushButton("💾 Save Settings")
+        self.save_btn = QPushButton("Save Settings")
         self.save_btn.setCursor(Qt.PointingHandCursor)
         self.save_btn.setFixedWidth(200)
         self.save_btn.clicked.connect(self._save)
@@ -255,7 +255,7 @@ class CompanyTab(QWidget):
                 currency_symbol=self.currency_input.text(),
                 tax_rate=self.tax_rate_input.value(),
             )
-            QMessageBox.information(self, "Success", "✅ Company settings saved!")
+            QMessageBox.information(self, "Success", "Company settings saved!")
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to save: {e}")
 
@@ -289,12 +289,12 @@ class BackupTab(QWidget):
         backup_layout.addWidget(backup_label)
 
         btn_row = QHBoxLayout()
-        self.backup_btn = QPushButton("📥 Create Backup")
+        self.backup_btn = QPushButton("Create Backup")
         self.backup_btn.setCursor(Qt.PointingHandCursor)
         self.backup_btn.clicked.connect(self._backup)
         btn_row.addWidget(self.backup_btn)
 
-        self.restore_btn = QPushButton("📤 Restore from Backup")
+        self.restore_btn = QPushButton("Restore from Backup")
         self.restore_btn.setCursor(Qt.PointingHandCursor)
         self.restore_btn.setStyleSheet("background-color: #FF9800;")
         self.restore_btn.clicked.connect(self._restore)
@@ -342,7 +342,7 @@ class BackupTab(QWidget):
                 size_mb = file_size / (1024 * 1024)
                 QMessageBox.information(
                     self, "Success",
-                    f"✅ Backup created successfully!\n"
+                    f"Backup created successfully!\n"
                     f"Size: {size_mb:.2f} MB\n"
                     f"Location: {filepath}",
                 )
@@ -358,7 +358,7 @@ class BackupTab(QWidget):
         if filepath:
             reply = QMessageBox.warning(
                 self, "Confirm Restore",
-                "⚠️ RESTORING WILL OVERWRITE ALL DATA!\n\n"
+                "RESTORING WILL OVERWRITE ALL DATA!\n\n"
                 "All current data in the database will be replaced "
                 "with the backup data.\n\n"
                 "This cannot be undone. Continue?",
@@ -368,7 +368,7 @@ class BackupTab(QWidget):
             if reply == QMessageBox.Yes:
                 try:
                     self.service.restore_database(filepath)
-                    QMessageBox.information(self, "Success", "✅ Database restored successfully!")
+                    QMessageBox.information(self, "Success", "Database restored successfully!")
                 except Exception as e:
                     QMessageBox.critical(self, "Restore Failed", str(e))
 
@@ -436,7 +436,7 @@ class ProfileTab(QWidget):
         self.confirm_pwd.setEchoMode(QLineEdit.Password)
         pwd_form.addRow("Confirm New:", self.confirm_pwd)
 
-        self.change_pwd_btn = QPushButton("🔑 Change Password")
+        self.change_pwd_btn = QPushButton("Change Password")
         self.change_pwd_btn.setCursor(Qt.PointingHandCursor)
         self.change_pwd_btn.clicked.connect(self._change_password)
         pwd_form.addRow("", self.change_pwd_btn)
@@ -467,7 +467,7 @@ class ProfileTab(QWidget):
             self.service.change_own_password(
                 session_manager.current_user.user_id, current, new
             )
-            QMessageBox.information(self, "Success", "✅ Password changed successfully!")
+            QMessageBox.information(self, "Success", "Password changed successfully!")
             self.current_pwd.clear()
             self.new_pwd.clear()
             self.confirm_pwd.clear()
@@ -490,7 +490,7 @@ class SettingsPage(QWidget):
         layout.setContentsMargins(24, 24, 24, 24)
         layout.setSpacing(16)
 
-        title = QLabel("⚙️ Settings")
+        title = QLabel("Settings")
         title.setObjectName("sectionTitle")
         layout.addWidget(title)
 
@@ -498,15 +498,15 @@ class SettingsPage(QWidget):
         self.tabs.setDocumentMode(True)
 
         self.users_tab = UsersTab(self.db)
-        self.tabs.addTab(self.users_tab, "👥 Users")
+        self.tabs.addTab(self.users_tab, "Users")
 
         self.company_tab = CompanyTab(self.db)
-        self.tabs.addTab(self.company_tab, "🏢 Company")
+        self.tabs.addTab(self.company_tab, "Company")
 
         self.backup_tab = BackupTab(self.db)
-        self.tabs.addTab(self.backup_tab, "💾 Backup")
+        self.tabs.addTab(self.backup_tab, "Backup")
 
         self.profile_tab = ProfileTab(self.db)
-        self.tabs.addTab(self.profile_tab, "👤 Profile")
+        self.tabs.addTab(self.profile_tab, "Profile")
 
         layout.addWidget(self.tabs)

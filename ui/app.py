@@ -13,14 +13,12 @@ from inventory.session import session_manager
 from inventory.services.auth_service import AuthService
 from ui.theme import theme_manager
 from ui.pages.login_page import LoginPage
-from ui.pages.register_page import RegisterPage
 from ui.pages.dashboard_page import DashboardPage
 from ui.pages.products_page import ProductsPage
 from ui.pages.suppliers_page import SuppliersPage
 from ui.pages.customers_page import CustomersPage
 from ui.pages.purchases_page import PurchasesPage
 from ui.pages.sales_page import SalesPage
-from ui.pages.returns_page import ReturnsPage
 from ui.pages.reports_page import ReportsPage
 from ui.pages.activity_log_page import ActivityLogPage
 from ui.pages.settings_page import SettingsPage
@@ -38,14 +36,20 @@ class SidebarButton(QPushButton):
         self.setObjectName("sidebarButton")
         self.setCheckable(True)
         self.setCursor(Qt.PointingHandCursor)
-        self.setText(f"  {icon_text}  {text}")
+        if icon_text:
+            self.setText(f"  {icon_text}  {text}")
+        else:
+            self.setText(f"    {text}")
         self.setMinimumHeight(44)
 
     def set_collapsed(self, collapsed: bool):
         if collapsed:
-            self.setText(f"  {self._icon_text}  ")
+            self.setText(f"  {self._icon_text}  " if self._icon_text else "")
         else:
-            self.setText(f"  {self._icon_text}  {self._full_text}")
+            if self._icon_text:
+                self.setText(f"  {self._icon_text}  {self._full_text}")
+            else:
+                self.setText(f"    {self._full_text}")
 
 
 class MainWindow(QMainWindow):
@@ -75,9 +79,7 @@ class MainWindow(QMainWindow):
 
         self.auth_stack = QStackedWidget()
         self.login_page = LoginPage(self.db)
-        self.register_page = RegisterPage(self.db)
         self.auth_stack.addWidget(self.login_page)
-        self.auth_stack.addWidget(self.register_page)
 
         self.main_app = self._build_main_app()
 
@@ -97,7 +99,7 @@ class MainWindow(QMainWindow):
         sidebar_layout.setContentsMargins(8, 12, 8, 12)
         sidebar_layout.setSpacing(4)
 
-        logo_label = QLabel("📦 IMS")
+        logo_label = QLabel("IMS")
         logo_label.setObjectName("titleLabel")
         logo_label.setAlignment(Qt.AlignCenter)
         logo_label.setMinimumHeight(50)
@@ -106,16 +108,15 @@ class MainWindow(QMainWindow):
 
         self.sidebar_buttons = []
         nav_items = [
-            ("Dashboard", "📊"),
-            ("Products", "📦"),
-            ("Suppliers", "👥"),
-            ("Customers", "👤"),
-            ("Purchases", "🛒"),
-            ("Sales", "💳"),
-            ("Returns", "↩️"),
-            ("Reports", "📈"),
-            ("Activity Log", "📋"),
-            ("Settings", "⚙️"),
+            ("Dashboard", ""),
+            ("Products", ""),
+            ("Suppliers", ""),
+            ("Customers", ""),
+            ("Purchases", ""),
+            ("Sales", ""),
+            ("Reports", ""),
+            ("Activity Log", ""),
+            ("Settings", ""),
         ]
 
         for text, icon in nav_items:
@@ -160,7 +161,6 @@ class MainWindow(QMainWindow):
         self.customers_page = CustomersPage(self.db)
         self.purchases_page = PurchasesPage(self.db)
         self.sales_page = SalesPage(self.db)
-        self.returns_page = ReturnsPage(self.db)
         self.reports_page = ReportsPage(self.db)
         self.activity_log_page = ActivityLogPage(self.db)
         self.settings_page = SettingsPage(self.db)
@@ -171,7 +171,6 @@ class MainWindow(QMainWindow):
         self.content_stack.addWidget(self.customers_page)
         self.content_stack.addWidget(self.purchases_page)
         self.content_stack.addWidget(self.sales_page)
-        self.content_stack.addWidget(self.returns_page)
         self.content_stack.addWidget(self.reports_page)
         self.content_stack.addWidget(self.activity_log_page)
         self.content_stack.addWidget(self.settings_page)
@@ -235,23 +234,12 @@ class MainWindow(QMainWindow):
         self.status_bar.setVisible(False)
 
         self.login_page.login_successful.connect(self._on_login_success)
-        self.login_page.switch_to_register.connect(self._show_register)
-        self.register_page.switch_to_login.connect(self._show_login)
-        self.register_page.registration_successful.connect(self._on_registration_success)
 
         self.auth_stack.currentChanged.connect(self._on_auth_page_changed)
-
-    def _show_login(self):
-        self.auth_stack.setCurrentIndex(0)
-
-    def _show_register(self):
-        self.auth_stack.setCurrentIndex(1)
 
     def _on_auth_page_changed(self, index):
         if index == 0:
             self.login_page.reset()
-        elif index == 1:
-            self.register_page.reset()
 
     def _on_login_success(self, user_data):
         self.root_stack.setCurrentIndex(1)
@@ -281,9 +269,6 @@ class MainWindow(QMainWindow):
                 btn.setVisible(True)
         self.settings_page.setVisible(is_admin)
 
-    def _on_registration_success(self):
-        self._show_login()
-
     def _on_logout(self):
         reply = QMessageBox.question(
             self, "Sign Out",
@@ -305,7 +290,7 @@ class MainWindow(QMainWindow):
         page_map = {
             "Dashboard": 0, "Products": 1, "Suppliers": 2,
             "Customers": 3, "Purchases": 4, "Sales": 5,
-            "Returns": 6, "Reports": 7, "Activity Log": 8, "Settings": 9,
+            "Reports": 6, "Activity Log": 7, "Settings": 8,
         }
         index = page_map.get(page_name, 0)
 

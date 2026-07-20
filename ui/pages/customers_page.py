@@ -22,12 +22,12 @@ class CustomersPage(QWidget):
         layout.setSpacing(16)
 
         header = QHBoxLayout()
-        title = QLabel("👤 Customers")
+        title = QLabel("Customers")
         title.setObjectName("sectionTitle")
         header.addWidget(title)
         header.addStretch()
 
-        self.delete_btn = QPushButton("🗑 Delete")
+        self.delete_btn = QPushButton("Delete")
         self.delete_btn.setCursor(Qt.PointingHandCursor)
         self.delete_btn.setStyleSheet("background-color: #F44336;")
         self.delete_btn.clicked.connect(self._on_delete)
@@ -70,7 +70,7 @@ class CustomersPage(QWidget):
             try:
                 self.service.create(**data)
                 self.refresh()
-                QMessageBox.information(self, "Success", "✅ Customer added successfully!")
+                QMessageBox.information(self, "Success", "Customer added successfully!")
             except ValidationError as e:
                 QMessageBox.warning(self, "Validation Error", str(e))
             except Exception as e:
@@ -100,7 +100,7 @@ class CustomersPage(QWidget):
             try:
                 self.service.update(row["customer_id"], **data)
                 self.refresh()
-                QMessageBox.information(self, "Success", "✅ Customer updated successfully!")
+                QMessageBox.information(self, "Success", "Customer updated successfully!")
             except ValidationError as e:
                 QMessageBox.warning(self, "Validation Error", str(e))
             except Exception as e:
@@ -120,6 +120,6 @@ class CustomersPage(QWidget):
             try:
                 self.service.delete(row["customer_id"])
                 self.refresh()
-                QMessageBox.information(self, "Success", "✅ Customer deleted.")
+                QMessageBox.information(self, "Success", "Customer deleted.")
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"Failed to delete: {e}")

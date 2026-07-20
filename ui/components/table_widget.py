@@ -105,7 +105,7 @@ class DataTableView(QFrame):
         search_layout.setContentsMargins(0, 0, 0, 0)
 
         self.search_input = QLineEdit()
-        self.search_input.setPlaceholderText("🔍 Search...")
+        self.search_input.setPlaceholderText("Search...")
         self.search_input.setMinimumWidth(280)
         self.search_input.textChanged.connect(self._on_search_changed)
         search_layout.addWidget(self.search_input)
@@ -113,7 +113,7 @@ class DataTableView(QFrame):
         toolbar.addLayout(search_layout)
         toolbar.addStretch()
 
-        self.add_button = QPushButton("➕ Add New")
+        self.add_button = QPushButton("+ Add New")
         self.add_button.setCursor(Qt.PointingHandCursor)
         self.add_button.clicked.connect(self.add_clicked.emit)
         toolbar.addWidget(self.add_button)

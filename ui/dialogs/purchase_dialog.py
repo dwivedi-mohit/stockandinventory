@@ -33,7 +33,7 @@ class PurchaseDialog(QDialog):
         layout.setSpacing(16)
         layout.setContentsMargins(24, 24, 24, 24)
 
-        title = QLabel("🛒 New Purchase Order")
+        title = QLabel("New Purchase Order")
         title.setObjectName("sectionTitle")
         layout.addWidget(title)
 
@@ -86,7 +86,7 @@ class PurchaseDialog(QDialog):
         self.cost_spin.setFixedWidth(120)
         item_row.addWidget(self.cost_spin)
 
-        self.add_item_btn = QPushButton("➕ Add")
+        self.add_item_btn = QPushButton("+ Add")
         self.add_item_btn.setCursor(Qt.PointingHandCursor)
         self.add_item_btn.clicked.connect(self._add_item)
         item_row.addWidget(self.add_item_btn)
@@ -131,7 +131,7 @@ class PurchaseDialog(QDialog):
         cancel_btn.setCursor(Qt.PointingHandCursor)
         cancel_btn.clicked.connect(self.reject)
         button_row.addWidget(cancel_btn)
-        self.save_btn = QPushButton("✅ Record Purchase")
+        self.save_btn = QPushButton("Record Purchase")
         self.save_btn.setCursor(Qt.PointingHandCursor)
         self.save_btn.clicked.connect(self._on_save)
         button_row.addWidget(self.save_btn)
@@ -247,7 +247,7 @@ class PurchaseDialog(QDialog):
             )
             QMessageBox.information(
                 self, "Success",
-                f"✅ Purchase #{purchase_id} recorded successfully!\n"
+                f"Purchase #{purchase_id} recorded successfully!\n"
                 f"Stock has been updated."
             )
             self.accept()

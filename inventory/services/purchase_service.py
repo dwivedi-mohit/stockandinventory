@@ -1,23 +1,11 @@
 from datetime import date
 from inventory.exceptions import ValidationError, NotFoundError
-from inventory.services.activity_service import ActivityService
-from inventory.session import session_manager
+from inventory.services.base_service import BaseService
 
 
-class PurchaseService:
+class PurchaseService(BaseService):
     def __init__(self, db):
-        self.db = db
-        self._activity = ActivityService(db)
-
-    def _log(self, action, entity_id=None, details=None):
-        if session_manager.is_authenticated:
-            self._activity.log(
-                user_id=session_manager.current_user.user_id,
-                action=action,
-                entity_type="purchase",
-                entity_id=entity_id,
-                details=details,
-            )
+        super().__init__(db, "purchase")
 
     def get_all(self, search=""):
         query = """SELECT p.purchase_id, p.purchase_date, p.total_amount, p.status,
@@ -57,8 +45,8 @@ class PurchaseService:
         )
         purchase["items"] = items
         return purchase
-
     def create(self, supplier_id, user_id, items, purchase_date=None, notes=""):
+        """Record a purchase order and update product stock levels."""
         if not items:
             raise ValidationError("Purchase must have at least one item.")
 

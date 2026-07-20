@@ -43,3 +43,7 @@ htmlcov/
 # Database backups
 backups/
 *.sql.gz
+
+# Legacy/removed
+*.pyc
+__pycache__/

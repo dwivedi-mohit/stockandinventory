@@ -1,204 +1,203 @@
-# 📦 Inventory Management System
+  ___           _            _   _                 _   _       __  __
+ |_ _|_ __ ___ (_)_ __   ___| |_(_)_ __ ___   __ _| | | |_   _|  \/  | __ _ _ __
+  | || '_ ` _ \| | '_ \ / __| __| | '_ ` _ \ / _` | | | \ \ / / |\/| |/ _` | '__|
+  | || | | | | | | | | | (__| |_| | | | | | | (_| | | | |\ V /| |  | | (_| | |
+ |___|_| |_| |_|_|_| |_|\___|\__|_|_| |_| |_|\__,_|_| |_| \_/ |_|  |_|\__,_|_|
 
-A Python-based desktop application for managing products, suppliers, purchases, and sales with a modern GUI built using Tkinter.
+                    _   _                 ____
+                   | \ | | ___  ___ _ __ / ___|___  _ __ ___
+                   |  \| |/ _ \/ _ \ '_ \\___ \ _ \| '_ ` _ \
+                   | |\  |  __/  __/ |_) |___) | | | | | | | |
+                   |_| \_|\___|\___| .__/|____/|_| |_| |_| |_|
+                                   |_|
 
-## Features
+A Python desktop application for managing products, suppliers, purchases,
+and sales with a modern PySide6 (Qt) GUI and MySQL database.
 
-✨ **Features Included:**
-- ✅ Add, view, and manage products
-- ✅ Supplier management
-- ✅ Purchase tracking
-- ✅ Sales management
-- ✅ Low stock alerts
-- ✅ Sales summary reports
-- ✅ MySQL database integration
-- ✅ User-friendly GUI interface
+---
 
-## Screenshots
+  ___      _   _
+ / _ \ ___| |_| |_ ___ _ __
+| | | / __| __| __/ _ \ '__|
+| |_| \__ \ |_| |_  __/ |
+ \___/|___/\__|\__\___|_|
 
-```
-📦 Inventory Management System
-├── ➕ Add Product
-├── 📋 View Products
-├── 👥 Add Supplier
-├── 🛒 Purchase Product
-├── 💳 Sell Product
-├── ⚠️ Low Stock Report
-└── 📊 Sales Summary
-```
+[x] Add, view, and manage products with categories, SKUs, and barcodes
+[x] Supplier management with contact info and purchase history
+[x] Purchase order tracking with stock updates
+[x] Sales invoicing with customer management and loyalty points
+[x] Low stock alerts and automatic reorder suggestions
+[x] Reports and analytics (inventory valuation, profit/loss, best sellers)
+[x] MySQL database integration with connection retry logic
+[x] Role-based access control (admin, manager, staff)
+[x] CSV export for all reports
+[x] Dark/light theme toggle
 
-## Installation
+---
+
+  ___                _   _
+ / _ \ _ __  ___  __| | | |_ ___  __ _ _ __
+| | | | '_ \/ __|/ _` | | __/ _ \/ _` | '_ \
+| |_| | |_) \__ \ (_| | | |_|  __/ (_| | | | |
+ \___/| .__/|___/\__,_|  \__\___|\__,_|_| |_|
+      |_|
 
 ### Prerequisites
+
 - Python 3.7+
-- MySQL Server running locally
+- MySQL Server (running locally or remotely)
 - pip package manager
 
-### Step 1: Clone the Repository
+### Setup
+
 ```bash
+# Clone the repository
 git clone https://github.com/dwivedi-mohit/stockandinventory.git
 cd stockandinventory
-```
 
-### Step 2: Setup Database
-```bash
-# Create the database and tables
-mysql -u root -p < database_setup.sql
-```
+# Create and activate virtual environment
+python -m venv .venv
+source .venv/bin/activate
 
-### Step 3: Install Dependencies
-```bash
-# Create virtual environment (optional but recommended)
-python -m venv venv
-
-# Activate virtual environment
-# On Windows:
-venv\Scripts\activate
-# On macOS/Linux:
-source venv/bin/activate
-
-# Install required packages
+# Install dependencies
 pip install -r requirements.txt
+
+# Set up the database
+mysql -u root -p < database_setup.sql
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your MySQL credentials
 ```
 
-## Running the Application
+---
 
-### Development Mode
+  __ _ _ __  _   _  __ _  __ _
+ / _` | '_ \| | | |/ _` |/ _` |
+| (_| | | | | |_| | (_| | (_| |
+ \__,_|_| |_|\__,_|\__, |\__,_|
+                   |___/
+
 ```bash
-python inventory_ui.py
+source .venv/bin/activate
+python main.py
 ```
 
-### Create Standalone Executable (Windows/macOS/Linux)
-```bash
-# Make build script executable (macOS/Linux)
-chmod +x build.sh
-
-# Run build script
-./build.sh
-
-# The executable will be created in the 'dist' folder
-# Run it directly without Python installation!
-```
-
-## Building for Distribution
-
-### Option 1: Using PyInstaller (Recommended)
-```bash
-# Install PyInstaller
-pip install pyinstaller
-
-# Build executable
-pyinstaller --onefile --windowed --name="InventorySystem" inventory_ui.py
-
-# Find executable in dist/ folder
-```
-
-### Option 2: Create Windows Installer
-```bash
-# Install pyinstaller and setuptools
-pip install pyinstaller setuptools
-
-# Create installer
-pyinstaller --onefile --windowed --icon=icon.ico inventory_ui.py
-```
-
-## Publishing Steps
-
-### 1. **Create Releases on GitHub**
-```bash
-# Tag your release
-git tag v1.0.0
-git push origin v1.0.0
-
-# Go to GitHub → Releases → Create Release
-# Upload the executable from dist/ folder
-```
-
-### 2. **Create installer with PyInstaller**
-```bash
-pyinstaller --onefile --windowed \
-  --name="InventoryManagementSystem" \
-  --icon=icon.ico \
-  inventory_ui.py
-```
-
-### 3. **Distribute to Users**
-- Share the standalone executable
-- Users can run without installing Python
-- All dependencies are bundled
-
-### 4. **Package for PyPI (Python Package Index)**
-```bash
-# Create setup.py
-pip install wheel twine
-
-# Build package
-python setup.py sdist bdist_wheel
-
-# Upload to PyPI
-twine upload dist/*
-```
-
-## Project Structure
+  ___ _   _ _ __ ___  _ __ ___   __ _ _ __
+ / _ \ | | | '_ ` _ \| '_ ` _ \ / _` | '__|
+|  __/ |_| | | | | | | | | | | | (_| | |
+ \___|\__,_|_| |_| |_|_| |_| |_|\__,_|_|
 
 ```
 stockandinventory/
-├── inventory_ui.py              # Main GUI application
-├── inventory_management.py       # Database operations
-├── connection_test.py            # Database connection test
-├── requirements.txt              # Python dependencies
-├── build.sh                      # Build script for executable
-├── README.md                     # Documentation
-└── setup.sh                      # Environment setup script
+|-- main.py                     Application entry point
+|-- database_setup.sql          Database schema and seed data
+|-- requirements.txt            Python dependencies
+|-- .env.example                Environment variable template
+|-- inventory/
+|   |-- config.py               Configuration (DB, app, env loader)
+|   |-- database.py             Database manager (connection pool)
+|   |-- exceptions.py           Custom exception classes
+|   |-- session.py              User session management
+|   |-- services/
+|   |   |-- base_service.py     Base class with activity logging
+|   |   |-- activity_service.py Audit trail
+|   |   |-- auth_service.py     Authentication and registration
+|   |   |-- category_service.py Product categories
+|   |   |-- customer_service.py Customer management
+|   |   |-- product_service.py  Product CRUD and stock
+|   |   |-- purchase_service.py Purchase orders
+|   |   |-- report_service.py   Reporting engine
+|   |   |-- sale_service.py     Sales and returns
+|   |   |-- settings_service.py Company settings and backup
+|   |   |-- supplier_service.py Supplier management
+|   |   |-- user_service.py     User management
+|   |-- utils/
+|       |-- password_utils.py   Password hashing (scrypt)
+|       |-- validators.py       Input validation
+|-- ui/
+|   |-- app.py                  Main window, sidebar, navigation
+|   |-- theme.py                Dark/light theme manager
+|   |-- components/
+|   |   |-- table_widget.py     Reusable data table component
+|   |-- dialogs/
+|   |   |-- form_dialog.py      Generic form dialog
+|   |   |-- purchase_dialog.py  Purchase order form
+|   |   |-- sale_dialog.py      Sales invoice form
+|   |-- pages/
+|       |-- login_page.py       Login screen
+|       |-- dashboard_page.py   Dashboard with charts
+|       |-- products_page.py    Product management
+|       |-- suppliers_page.py   Supplier management
+|       |-- customers_page.py   Customer management
+|       |-- purchases_page.py   Purchase orders
+|       |-- sales_page.py       Sales invoices
+|       |-- reports_page.py     Reports and CSV export
+|       |-- activity_log_page.py Audit log viewer
+|       |-- settings_page.py    Settings (users, company, backup)
 ```
 
-## Configuration
+---
 
-Edit the database connection settings in `inventory_ui.py`:
-```python
-self.conn = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="root",
-    database="inventory_db"
-)
+  ____   ___  _   _ _____ ____ ___  _   _ ____
+ / ___| / _ \| | | | ____/ ___/ _ \| \ | / ___|
+| |  _ | | | | | | |  _|| |  | | | |  \| \___ \
+| |_| || |_| | |_| | |__| |__| |_| | |\  |___) |
+ \____| \___/ \___/|_____\____\___/|_| \_|____/
+
+Copy `.env.example` to `.env` and set:
+
+```
+DB_HOST=localhost          MySQL host
+DB_PORT=3306               MySQL port
+DB_USER=root               MySQL user
+DB_PASSWORD=your_password  MySQL password
+DB_NAME=inventory_db       Database name
+APP_TITLE=Inventory Management System
+APP_COMPANY=Your Company Name
 ```
 
-## Database Schema
+---
 
-The application requires these tables:
-- `Products` - product_id, product_name, price, stock_quantity
-- `Suppliers` - supplier_id, supplier_name, contact_info, email
-
-## Troubleshooting
+  ____          _                  _____         _
+ |  _ \        | |                |  ___|       | |
+ | | | |  __ _ | |_  ___   _ __   | |__    __ _ | |_   ___
+ | | | | / _` || __|/ _ \ | '_ \  |  __|  / _` || __| / _ \
+ | |_| || (_| || |_| (_) || | | | | |___ | (_| || |_ |  __/
+ |____/  \__,_| \__|\___/ |_| |_| \____/  \__,_| \__| \___|
 
 ### Database Connection Error
 - Ensure MySQL Server is running
-- Verify username and password
+- Verify username and password in .env
 - Check database name exists
 
 ### GUI Not Launching
-- Ensure tkinter is installed: `python -m tkinter`
+- Ensure PySide6 is installed: `pip install PySide6`
 - Check Python version (3.7+)
 
-### Build Fails
-- Clear previous builds: `rm -rf build dist *.spec`
-- Reinstall PyInstaller: `pip install --upgrade pyinstaller`
+---
 
-## Version History
+  __     ___          _
+ \ \   / (_)         | |
+  \ \ / / _ _ __ ___ | |__   ___ _ __ ___
+   \ V / | | '_ ` _ \| '_ \ / _ \ '__/ __|
+    \ /  | | | | | | | |_) |  __/ |  \__ \
+    |_|  |_|_| |_| |_|_.__/ \___|_|  |___/
 
-- **v1.0.0** - Initial release with GUI
-- Features: Product management, Sales tracking, Reports
+- **v1.0.0** - Initial release
+  - Features: Product management, Sales tracking, Reports
 
-## License
+---
+
+  _     ____          _
+ | |   / ___| ___  __| | ___ _ __
+ | |   \___ \/ _ \/ _` |/ _ \ '__|
+ | |_   ___) |  __/ (_| |  __/ |
+ |_(_) |____/ \___|\__,_|\___|_|
 
 This project is open source and available under the MIT License.
 
-## Author
-
-**Mohit Dwivedi**
+**Author:** Mohit Dwivedi
 - GitHub: [@dwivedi-mohit](https://github.com/dwivedi-mohit)
-
-## Support
 
 For issues, questions, or contributions, please create an issue on GitHub.
